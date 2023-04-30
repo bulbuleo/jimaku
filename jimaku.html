@@ -113,13 +113,11 @@
     }
     recognition.onresult = (event) => {
         let interimTranscript = '';
-        console.log(event);
+       // console.log(event);
         for (let i = event.resultIndex; i < event.results.length; i++) {
             let transcript = event.results[i][0].transcript;
             if (event.results[i].isFinal && transcript.length != 0) {
                 finalTranscript = transcript;
-                console.log("aaaa")
-
                 saveText = saveText + "\n" + finalTranscript;
                 localStorage.setItem('text', saveText);
 
