@@ -1,5 +1,8 @@
-<html>
-<header>
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="Twitter:site" content="@bulbuleo">
     <meta name="twitter:title" content="音声認識機能を公開しました">
@@ -8,58 +11,61 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
     <style>
-        body {
-            background-color: green
-        }
 
-        body {
-            color: white;
-        }
-
-        div#result-div {
-            font-size: 60px;
-            font-family: 'Kosugi Maru', sans-serif;
-            color: white;
-            text-shadow:
-                -2px -2px 0 black,
-                2px -2px 0 black,
-                -2px 2px 0 black,
-                2px 2px 0 black;
-            margin-top: 100px;
-            margin-bottom: 300px;
-            line-height: 1.2em;
-        }
     </style>
 
-</header>
+</head>
 
 
-<body>
+<body class="container">
+    <h1 class="display-1">OBS WebUI</h1>
+
+    <p>音声認識をしてOBSに字幕として表示する機能を提供します。また、音声コマンドによりリプレイなどを行うことが可能にします。シーンの切り替えなど、今後機能を追加予定です。</p>
+    <br>
+    <div class="row">
+        <div class="col-3">
+            <p>字幕の表示方法</p>
+        </div>
+
+        <div class="col-9">
+            1.OBSで「ツール」＞　obs-websocket設定で、WebSocketサーバーを有効にするにチェックを入れる。<br>
+            2.サーバーポートは4455に、認証を有効にするのチェックはしない<br>
+            3.OKをクリック<br>
+            4.OBSで字幕を入れたいシーンにjimakuという名前のテキスト(GDI+)ソースを追加する。<br>
+            5.このページをリロードする。<br>
+            6.字幕が表示されるので、位置やサイズを調整する。<br>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+    <div class="col-3">
+        <input class="form-check-input" type="checkbox" id="tts" name="tts">
+        <label class="form-check-label" for="tts">テキスト読み上げ</label>
+    </div>
+    <div class="col-3">
+        <input class="form-check-input" type="checkbox" id="translate" name="translate">
+        <label class="form-check-label" for="translate">途中経過を表示しない</label>
+    </div>
+    <div class="col-3">
+        <input class="form-check-input" type="checkbox" id="replay" name="replay" checked>
+        <label class="form-check-label" for="replay">「リプレイして」でリプレイ</label>
+    </div>
+
+</div>
+
+<br>
+    <button class="btn btn-primary" type="button" onclick="saveFile();">テキストとしてダウンロード</button>
+    <button class="btn btn-primary" type="button" onclick="clearText();">字幕をクリア</button>
+    <br>
+    <br>
+    <p>-認識結果-</p>
     <div id="result-div"></div>
-    <br>
-    <br>
-    字幕の表示方法：<br>
-    1.OBSで「ツール」＞　obs-websocket設定で、WebSocketサーバーを有効にするにチェックを入れる。<br>
-    2.サーバーポートは4455に、認証を有効にするのチェックはしない<br>
-    3.OKをクリック<br>
-    4.OBSで字幕を入れたいシーンにjimakuという名前のテキスト(GDI+)ソースを追加する。<br>
-    5.このページをリロードする。<br>
-    6.字幕が表示されるので、位置やサイズを調整する。<br>
-    <input type="button" value="dowonload transcirpt" onclick="saveFile();" />
-    <input type="button" value="clear transcript" onclick="clearText();" />
-    <div>
-        <input type="checkbox" id="tts" name="tts">
-        <label for="tts">読み上げ</label>
-    </div>
-    <div>
-        <input type="checkbox" id="translate" name="translate">
-        <label for="translate">途中経過を表示しない</label>
-    </div>
-    <div>
-        <input type="checkbox" id="replay" name="replay">
-        <label for="replay">「リプレイして」といったらリプレイバッファを保存する</label>
-    </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/obs-websocket-js"></script>
 
@@ -69,10 +75,10 @@
         obs = new OBSWebSocket();
         await obs.connect('ws://127.0.0.1:4455');
         //var id = await obs.call('GetSceneItemId', { sceneName: 'pogo', sourceName: 'test' });
-        var trans = await obs.call('SetInputSettings', { inputName: 'jimaku', inputSettings: { text: "字幕を表示します。" } });
-        console.log(trans)
+        await obs.call('SetInputSettings', { inputName: 'jimaku', inputSettings: { text: "字幕を表示します。" } });
 
-
+        var list = await obs.call('GetHotkeyList');
+        console.log(list);
     }
 
     connect();
@@ -103,9 +109,8 @@
         localStorage.setItem('text', '');
     }
 
+    var linelength = 40;
 
-
-    var linelength = 10;
     const resultDiv = document.querySelector('#result-div');
 
     SpeechRecognition = webkitSpeechRecognition;
@@ -131,13 +136,21 @@
                 finalTranscript = transcript;
                 saveText = saveText + "\n" + finalTranscript;
                 localStorage.setItem('text', saveText);
-              
+                console.log(finalTranscript.replace(/\s/g, ""));
+                if (document.getElementById("replay").checked && (finalTranscript.replace(/\s/g, "")).includes("リプレイして")) {
+                    console.log("start replays");
+                    obs.call('TriggerHotkeyByName', { 'hotkeyName': 'instant_replay.trigger' });
+                };
+                if ((finalTranscript.replace(/\s/g, "")).includes("ワンちゃん")) {
+                    console.log("replay save");
+                    obs.call('TriggerMediaInputAction', { 'inputName': 'ワンちゃん' });
+                };
 
 
 
                 if (document.getElementById("translate").checked) {
-                    console.log(linelength);
                     var outputText = finalTranscript.slice(-linelength);
+                    //var outputText = finalTranscript
                     resultDiv.innerHTML = outputText;
                     obs.call('SetInputSettings', { inputName: 'jimaku', inputSettings: { text: outputText } });
                 }
@@ -161,8 +174,10 @@
 
         if (!document.getElementById("translate").checked) {
             var outputText = (finalTranscript + " " + interimTranscript);
-console.log("output tesxt "+outputText);
-                outputText = outputText.slice(-linelength)
+
+
+            outputText = outputText.slice(-linelength)
+
             resultDiv.innerHTML = outputText;
             obs.call('SetInputSettings', { inputName: 'jimaku', inputSettings: { text: outputText } });
         }
