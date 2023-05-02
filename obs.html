@@ -43,23 +43,34 @@
         </div>
     </div>
     <br>
-    <div class="row">
-    <div class="col-3">
-        <input class="form-check-input" type="checkbox" id="tts" name="tts">
-        <label class="form-check-label" for="tts">テキスト読み上げ</label>
-    </div>
-    <div class="col-3">
-        <input class="form-check-input" type="checkbox" id="translate" name="translate">
-        <label class="form-check-label" for="translate">途中経過を表示しない</label>
-    </div>
-    <div class="col-3">
-        <input class="form-check-input" type="checkbox" id="replay" name="replay" checked>
-        <label class="form-check-label" for="replay">「リプレイして」でリプレイ</label>
-    </div>
-
-</div>
-
 <br>
+    <div class="row">
+        <div class="col-3">
+            <input class="form-check-input" type="checkbox" id="tts" name="tts">
+            <label class="form-check-label" for="tts">テキスト読み上げ</label>
+        </div>
+        <div class="col-9">認識したテキストを読み上げます。</div>
+    </div>
+<br>
+    <div class="row">
+        <div class="col-3">
+            <input class="form-check-input" type="checkbox" id="translate" name="translate">
+            <label class="form-check-label" for="translate">途中経過を表示しない</label>
+        </div>
+        <div class="col-9">認識途中のテキストを表示します。</div>
+    </div>
+<br>
+    <div class="row">
+        <div class="col-3">
+            <input class="form-check-input" type="checkbox" id="replay" name="replay" checked>
+            <label class="form-check-label" for="replay">「リプレイして」でリプレイ</label>
+              </div> <div class="col-9">「リプレイして」と言うと、インスタント・リプレイを起動します。リプレイが正しく表示されるにはOBS側でインスタント・リプレイの設定をしておく必要があります。ｓ</div>
+     
+    </div>
+    
+    </div>
+
+    <br>
     <button class="btn btn-primary" type="button" onclick="saveFile();">テキストとしてダウンロード</button>
     <button class="btn btn-primary" type="button" onclick="clearText();">字幕をクリア</button>
     <br>
