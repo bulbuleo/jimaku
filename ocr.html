@@ -3,11 +3,24 @@
 <head>
 
     <script src='https://cdn.jsdelivr.net/npm/tesseract.js@4/dist/tesseract.min.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/obs-websocket-js"></script>
     <script>
 
         var worker;
         var deviceId;
         var isRecognizing=false;
+
+        var obs;
+    async function connect() {
+        obs = new OBSWebSocket();
+        await obs.connect('ws://127.0.0.1:4455');
+      
+    }
+
+    connect();
+
+
+
         async function init() {
             worker = await Tesseract.createWorker({
                 logger: m => console.log(m)
@@ -27,8 +40,7 @@
             deviceId = devices[0].deviceId;
 
             const video = document.querySelector("#camera");
-            const canvas = document.querySelector("#picture");
-            const se = document.querySelector('#se');
+            const canvas = document.querySelector("#killarea");
 
             /** カメラ設定 */
             const constraints = {
@@ -60,15 +72,16 @@
             }, 5000);
 
             async function recognize() {
-                console.log("recognize");
                 const ctx = canvas.getContext("2d");
                 ctx.drawImage(video, 480, 600, 640, 480, 0, 0, 1280, 720);
                 isRecognizing=true;
                 const { data: { text } } = await worker.recognize(canvas);
                 isRecognizing=false;
                 var recongizedText = text.replace(/\s+/g, "");
-                console.log(recongizedText);
-                console.log(recongizedText.includes("たおした"));
+                console.log("recognize: "+recongizedText);
+                if(recongizedText.includes("たおした")){
+                    obs.call('TriggerHotkeyByName', { 'hotkeyName': 'instant_replay.trigger' });
+                }
             }
 
         }
@@ -83,7 +96,8 @@
 
 <body>
     <video id="camera" width="640" height="360"></video>
-    <canvas id="picture" width="640" height="360"></canvas>
+    <br><br>
+    <canvas id="killarea" width="640" height="360"></canvas>
 </body>
 
 </html>
