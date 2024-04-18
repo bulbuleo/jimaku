@@ -60,6 +60,8 @@
         <input type="checkbox" id="replay" name="replay">
         <label for="replay">「リプレイして」といったらリプレイバッファを保存する</label>
     </div>
+
+    <div id="histry-div"></div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/obs-websocket-js"></script>
 
@@ -107,6 +109,8 @@
 
     var linelength = 25;
     const resultDiv = document.querySelector('#result-div');
+    const histryDiv = document.querySelector('#histry-div');
+
 
     SpeechRecognition = webkitSpeechRecognition;
     let recognition = new SpeechRecognition();
@@ -130,6 +134,7 @@
             if (event.results[i].isFinal && transcript.length != 0) {
                 finalTranscript = transcript;
                 saveText = saveText + "\n" + finalTranscript;
+                histryDiv.innerHTML=savaText;
                 localStorage.setItem('text', saveText);
               
 
