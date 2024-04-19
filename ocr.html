@@ -12,12 +12,13 @@
 
         var obs;
     async function connect() {
+        var port = document.getElementById("port").value;
         obs = new OBSWebSocket();
-        await obs.connect('ws://127.0.0.1:14444');
-      
+        await obs.connect('ws://127.0.0.1:'+port);
+      init();
     }
 
-    connect();
+    
 
 
 
@@ -87,14 +88,13 @@
         }
 
 
-        init();
-
-
 
     </script>
 </head>
 
 <body>
+    <input type=text id="port" value="14443"></input>
+    <input type="button" id="connect" onclick="connect()" value="connet"></button><br>
     <video id="camera" width="640" height="360"></video>
     <br><br>
     <canvas id="killarea" width="640" height="360"></canvas>

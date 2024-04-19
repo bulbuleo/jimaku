@@ -1,0 +1,250 @@
+<html lang="ja">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="Twitter:site" content="@bulbuleo">
+    <meta name="twitter:title" content="音声認識機能を公開しました">
+    <meta name="twitter:description" content="簡単にOBSに字幕を表示することが可能です。">
+    <meta name="twitter:image" content="http://bulbuleo.000webhostapp.com/transcribe.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kosugi+Maru&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM"
+        crossorigin="anonymous"></script>
+    <style>
+
+    </style>
+
+</head>
+
+
+<body class="container">
+    <h1 class="display-1">OBS WebTool</h1>
+
+    <p>音声認識をしてOBSに字幕として表示する機能を提供します。また、音声コマンドによりリプレイなどを行うことが可能にします。シーンの切り替えなど、今後機能を追加予定です。</p>
+    <br>
+    <div class="row">
+        <div class="col-3">
+            <p>字幕の表示方法</p>
+        </div>
+
+        <div class="col-9">
+            1.OBSで「ツール」＞　obs-websocket設定で、WebSocketサーバーを有効にするにチェックを入れる。<br>
+            2.サーバーポートは4455に、認証を有効にするのチェックはしない<br>
+            3.OKをクリック<br>
+            4.OBSで字幕を入れたいシーンにjimakuという名前のテキスト(GDI+)ソースを追加する。<br>
+            5.このページをリロードする。<br>
+            6.字幕が表示されるので、位置やサイズを調整する。<br>
+        </div>
+    </div>
+    <br>
+<br>
+    <div class="row">
+        <div class="col-3">
+            <input class="form-check-input" type="checkbox" id="tts" name="tts">
+            <label class="form-check-label" for="tts">テキスト読み上げ</label>
+        </div>
+        <div class="col-9">認識したテキストを読み上げます。</div>
+    </div>
+<br>
+    <div class="row">
+        <div class="col-3">
+            <input class="form-check-input" type="checkbox" id="translate" name="translate">
+            <label class="form-check-label" for="translate">途中経過を表示しない</label>
+        </div>
+        <div class="col-9">認識途中のテキストを表示します。</div>
+    </div>
+<br>
+    <div class="row">
+        <div class="col-3">
+            <input class="form-check-input" type="checkbox" id="replay" name="replay" checked>
+            <label class="form-check-label" for="replay">リプレイ</label>
+              </div> <div class="col-9">「リプレイして」と言うと、インスタント・リプレイを起動します。リプレイが正しく表示されるにはOBS側でインスタント・リプレイの設定をしておく必要があります。</div>
+     
+    </div>
+
+    <div class="row">
+        <div class="col-3">
+            <input class="form-check-input" type="checkbox" id="mute" name="mute" checked>
+            <label class="form-check-label" for="mute">マイクをミュート</label>
+              </div> <div class="col-9">「ミュートします」と言うと、マイクをミュートします。「ミュート解除」と言うとミュートを解除します。</div>
+     
+    </div>
+    
+    </div>
+
+    <br>
+    <button class="btn btn-primary" type="button" onclick="saveFile();">テキストとしてダウンロード</button>
+    <button class="btn btn-primary" type="button" onclick="clearText();">テキストをクリア</button>
+    <br>
+    <br>
+    <div class="row">
+    <div class="col-3">-認識結果-</div>
+    <div class = "col-9" id="result-div"></div>
+</div>
+</body>
+<script src="https://cdn.jsdelivr.net/npm/obs-websocket-js"></script>
+
+<script>
+    var obs;
+    async function connect() {
+        obs = new OBSWebSocket();
+        await obs.connect('ws://127.0.0.1:4455');
+        console.log(await obs.call("GetInputList"));
+        //var id = await obs.call('GetSceneItemId', { sceneName: 'pogo', sourceName: 'test' });
+        await obs.call('SetInputSettings', { inputName: 'jimaku', inputSettings: { text: "字幕を表示します。" } });
+
+        var list = await obs.call('GetHotkeyList');
+        console.log(list);
+    }
+
+    connect();
+
+
+
+
+
+
+
+
+
+
+
+
+    function saveFile() {
+        console.log("save")
+        let blob = new Blob([localStorage.getItem('text')], { type: "text/plan" });
+        let link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = '字幕.txt';
+        link.click();
+    }
+
+    function clearText() {
+        console.log("clear");
+        saveText = "";
+        localStorage.setItem('text', '');
+    }
+
+    var linelength = 40;
+
+    const resultDiv = document.querySelector('#result-div');
+
+    SpeechRecognition = webkitSpeechRecognition;
+    let recognition = new SpeechRecognition();
+
+    recognition.lang = 'ja-JP';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+
+    let saveText = localStorage.getItem('text');
+    let finalTranscript = '';
+
+    recognition.onEnd = (event) => {
+        recognition.start();
+        console.log("end")
+    }
+    recognition.onresult = (event) => {
+        let interimTranscript = '';
+        // console.log(event);
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            let transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal && transcript.length != 0) {
+                finalTranscript = transcript;
+                saveText = saveText + "\n" + finalTranscript;
+                localStorage.setItem('text', saveText);
+                console.log(finalTranscript.replace(/\s/g, ""));
+                if (document.getElementById("replay").checked && (finalTranscript.replace(/\s/g, "")).includes("リプレイして")) {
+                    console.log("start replays");
+                    obs.call('TriggerHotkeyByName', { 'hotkeyName': 'instant_replay.trigger' });
+                };
+                if (document.getElementById("mute").checked && (finalTranscript.replace(/\s/g, "")).includes("ミュートします")) {
+                    console.log("mute microphone");
+                    obs.call('SetInputMute', { 'inputName': 'マイク','inputMuted':true });
+                };
+                if (document.getElementById("mute").checked && (finalTranscript.replace(/\s/g, "")).includes("ミュート解除")) {
+                    console.log("unmute microphone");
+                    obs.call('SetInputMute', { 'inputName': 'マイク','inputMuted':false });
+                };
+
+
+
+                if ((finalTranscript.replace(/\s/g, "")).includes("ワンちゃん")) {
+                    console.log("replay save");
+                    obs.call('TriggerMediaInputAction', { 'inputName': 'ワンちゃん' });
+                };
+
+
+
+                if (document.getElementById("translate").checked) {
+                    var outputText = finalTranscript.slice(-linelength);
+                    //var outputText = finalTranscript
+                    resultDiv.innerHTML = outputText;
+                    obs.call('SetInputSettings', { inputName: 'jimaku', inputSettings: { text: outputText } });
+                }
+
+                if (document.getElementById("tts").checked) {
+                    var synth = window.speechSynthesis;
+                    var voices = synth.getVoices();
+
+                    const uttr = new SpeechSynthesisUtterance(finalTranscript)
+                    uttr.pitch = 0.5;
+                    uttr.rate = 1.5;
+                    console.log(voices);
+
+                    speechSynthesis.speak(uttr);
+                }
+            } else {
+                if (!document.getElementById("translate").checked)
+                    interimTranscript = transcript;
+            }
+        }
+
+        if (!document.getElementById("translate").checked) {
+            var outputText = (finalTranscript + " " + interimTranscript);
+
+
+            outputText = outputText.slice(-linelength)
+            resultDiv.innerHTML = outputText;
+            obs.call('SetInputSettings', { inputName: 'jimaku', inputSettings: { text: outputText } });
+        }
+    }
+
+    window.onload = function () {
+        console.log("onload");
+        recognition.start();
+    }
+
+    var isActive = false;
+
+    recognition.onstart = () => {
+        console.log("start");
+        isActive = true;
+    }
+
+    recognition.onend = () => {
+        console.log("end");
+        obs.call('SetInputSettings', { inputName: 'jimaku', inputSettings: { text: '' } });
+        // obs.call('SaveReplayBuffer');
+        //recognition.start();
+        resultDiv.innerHTML = "";
+        finalTranscript = "";
+        isActive = false;
+    }
+
+    recognition
+    var checkstatus = function () {
+        console.log("check");
+        if (!isActive) {
+            recognition.start();
+        }
+    }
+    setInterval(checkstatus, 1000);
+</script>
+
+</html>
